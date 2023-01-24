@@ -13,5 +13,5 @@ echo "STRIPE_API_KEY = sk_test_***" > stripe_cli.env
 docker compose up -d
 ```
 
-## 3. Access the browser client on port `3000`
-If your docker host is accessible via localhost then open `http://localhost:3000`
+## 3. Access the browser client on port `8080`
+If your docker host is accessible via localhost then open `http://localhost:8080`

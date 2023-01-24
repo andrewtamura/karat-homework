@@ -1,21 +1,28 @@
 version: "3.8"
 
 services:
+  nginx-proxy:
+    container_name: nginx-proxy
+    image: nginx:latest
+    ports:
+      - 8080:80
+    volumes:
+      - ./default.conf.template:/etc/nginx/templates/default.conf.template:ro
+
   stripe-cli:
     image: stripe/stripe-cli:latest
     container_name: stripe-cli
     restart: unless-stopped
-    command: "listen --forward-to api:8000/stripe/webhook/"
+    command: "listen --forward-to api:5000/stripe/webhook/"
     env_file:
       - stripe_cli.env
 
   api:
     container_name: api
     build: ./api
-    ports:
-      - 5000:5000
     volumes:
       - ./api:/code
+    stop_signal: SIGKILL
     restart: unless-stopped
     
   browser-client:
@@ -24,8 +31,6 @@ services:
       context: ./browser-client
       target: install-requirements
     command: "npm run start"
-    ports: 
-      - 3000:3000
     volumes: 
       - ./browser-client:/code
     restart: unless-stopped
