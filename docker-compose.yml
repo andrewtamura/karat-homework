@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: stripe-cli
+    restart: unless-stopped
+    command: "listen --forward-to api:8000/stripe/webhook/"
+    env_file:
+      - stripe_cli.env
+
+  api:
+    container_name: api
+    build: ./api
+    ports:
+      - 5000:5000
+    volumes:
+      - ./api:/code
+    restart: unless-stopped
+    
+  browser-client:
+    container_name: browser-client
+    build: 
+      context: ./browser-client
+      target: install-requirements
+    command: "npm run start"
+    ports: 
+      - 3000:3000
+    volumes: 
+      - ./browser-client:/code
+    restart: unless-stopped
