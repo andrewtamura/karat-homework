@@ -22,7 +22,6 @@ export async function loader ({ params }) {
 
 const CardOnboard = () => {
   const { cardholders, accountId } = useLoaderData()
-  console.log(cardholders)
   if (!cardholders?.length) {
     return (
       <div>
@@ -48,7 +47,6 @@ const CardOnboard = () => {
         </p>
       </Form>
     </div>
-
   )
 }
 export default CardOnboard

@@ -96,6 +96,7 @@ class Account(MethodView):
     def get(self, account_id):
         account = (
             db.session.query(StripeAccount)
+            .options(db.joinedload(StripeAccount.cards), db.joinedload(StripeAccount.cardholders))
             .filter(StripeAccount.id == account_id)
             .first()
         )
@@ -195,7 +196,7 @@ class Cardholders(MethodView):
         if not account:
             abort(404, "Account not found")
         new_cardholder = stripe.issuing.Cardholder.create(
-            stripe_account=account_id, status="active", type="individual", **data
+            status="active", type="individual", **data
         )
         cardholder = StripeCardholder(id=new_cardholder.id, data=new_cardholder)
         cardholder.account = account
@@ -231,16 +232,16 @@ class Cards(MethodView):
             db.session.query(StripeAccount)
             .options(db.joinedload(StripeAccount.cardholders))
             .filter(
-                StripeAccount.cardholders.any(StripeCardholder.id == data.cardholder)
+                StripeAccount.cardholders.any(StripeCardholder.id == data.get("cardholder"))
             )
             .filter(StripeAccount.id == account_id)
             .first()
         )
         if not account:
             abort(404, "Account not found")
-        new_card = stripe.issuing.Card.create(stripe_account=account_id, **data)
+        new_card = stripe.issuing.Card.create(**data)
         card = StripeCard(id=new_card.id, data=new_card)
-        card.cardholder = db.session.query(StripeCardholder).get(data.cardholder)
+        card.cardholder = db.session.query(StripeCardholder).get(data.get("cardholder"))
         card.account = account
         db.session.add(card)
         db.session.commit()

@@ -24,7 +24,6 @@ const Account = () => {
       <Form method='POST' onSubmit={() => setLoading(true)}>
         <button type='submit' disabled={loading}>Update Account</button>
       </Form>
-
       <h2>Cardholders</h2>
       <Link to='cardholders/new'>Add a cardholder</Link>
       {account.cardholders.length
