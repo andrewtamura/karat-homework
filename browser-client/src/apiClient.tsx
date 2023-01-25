@@ -1,12 +1,20 @@
 export interface StripeAccount {
     id: string;
-    data: {
+    company: {
         name: string
+    },
+    future_requirements: {
+        currently_due: string[]
     }
 }
 
 export interface StripeAccountLink {
     url: string;
+}
+
+export interface CreateStripeAccountLink {
+    return_url: string;
+    refresh_url: string;
 }
 
 export interface StripeCardholder {
@@ -59,7 +67,7 @@ export const getAccount = async (accountId: string): Promise<Account> => {
     return await resp.json()
 }
 export const createAccount = async (): Promise<Account> => {
-    const resp = await fetch(`${API_ROOT}/accounts/`, {method: "POST"})
+    const resp = await fetch(`${API_ROOT}/accounts/`, { method: "POST" })
     return await resp.json()
 }
 export const getAccountOnboardingLink = async (accountId: string): Promise<StripeAccountLink> => {
@@ -75,7 +83,7 @@ export const getCardholders = async (accountId: string): Promise<Cardholder[]> =
     return await resp.json()
 }
 export const createCardholders = async (accountId: string, data: StripeCardholder): Promise<Cardholder[]> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/cardholders/`, {method: "POST", body: JSON.stringify(data)})
+    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/cardholders/`, { method: "POST", body: JSON.stringify(data) })
     return await resp.json()
 }
 export const getCards = async (accountId: string): Promise<Card[]> => {
@@ -83,6 +91,6 @@ export const getCards = async (accountId: string): Promise<Card[]> => {
     return await resp.json()
 }
 export const createCards = async (accountId: string, data: StripeCard): Promise<Card[]> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/cards/`, {method: "POST", body: JSON.stringify(data)})
+    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/cards/`, { method: "POST", body: JSON.stringify(data) })
     return await resp.json()
 }

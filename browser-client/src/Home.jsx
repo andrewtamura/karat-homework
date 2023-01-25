@@ -1,5 +1,4 @@
-import React from "react";
-import { Outlet, useLoaderData } from "react-router-dom";
+import { Link, Outlet, useLoaderData } from "react-router-dom";
 import { getAccounts } from "./apiClient";
 
 export const loader = async () => {
@@ -15,9 +14,8 @@ const Home = () => {
             <nav>
                 {accounts.length ? (
                     <ul>
-                        {accounts.map(({ name }) => (<li>{name}</li>))}
+                        {accounts.map(({ name, id }) => (<li><Link to={`/accounts/${id}`}>{name}</Link></li>))}
                     </ul>
-
                 ) : <p>No accounts</p>}
             </nav>
             <div>
