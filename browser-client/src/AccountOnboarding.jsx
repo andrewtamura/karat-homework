@@ -10,7 +10,7 @@ const AccountOnboarding = () => {
                 event.preventDefault()
                 setLoading(true)
                 const { id } = await createAccount()
-                const { url } = await getAccountOnboardingLink(id)
+                const { url } = await getAccountOnboardingLink(id, {})
                 window.href = url;
             }} disabled={loading}>Get Started</button>
 

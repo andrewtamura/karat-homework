@@ -115,7 +115,7 @@ class AccountCreateSchema(ma.Schema):
 @accounts.route("/<account_id>/onboarding-link/")
 class AccountOnboardingLink(MethodView):
     @accounts.response(200, AccountLinkSchema)
-    @accounts.arguments(AccountCreateSchema)
+    @accounts.arguments(AccountCreateSchema, location="query")
     def get(self, data, account_id):
         account = (
             db.session.query(StripeAccount)
@@ -133,7 +133,7 @@ class AccountOnboardingLink(MethodView):
 @accounts.route("/<account_id>/update-link/")
 class AccountUpdateLink(MethodView):
     @accounts.response(200, AccountLinkSchema)
-    @accounts.arguments(AccountCreateSchema)
+    @accounts.arguments(AccountCreateSchema, location="query")
     def get(self, data, account_id):
         account = (
             db.session.query(StripeAccount)

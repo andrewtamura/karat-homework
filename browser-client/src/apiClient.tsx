@@ -70,12 +70,14 @@ export const createAccount = async (): Promise<Account> => {
     const resp = await fetch(`${API_ROOT}/accounts/`, { method: "POST" })
     return await resp.json()
 }
-export const getAccountOnboardingLink = async (accountId: string): Promise<StripeAccountLink> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/onboarding-link/`)
+export const getAccountOnboardingLink = async (accountId: string, data: CreateStripeAccountLink): Promise<StripeAccountLink> => {
+    const queryParams = new URLSearchParams(data)
+    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/onboarding-link/?${queryParams}`)
     return await resp.json()
 }
-export const getAccountUpdateLink = async (accountId: string): Promise<StripeAccountLink> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/update-link/`)
+export const getAccountUpdateLink = async (accountId: string, data: CreateStripeAccountLink): Promise<StripeAccountLink> => {
+    const queryParams = new URLSearchParams(data)
+    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/update-link/?${queryParams}`)
     return await resp.json()
 }
 export const getCardholders = async (accountId: string): Promise<Cardholder[]> => {
