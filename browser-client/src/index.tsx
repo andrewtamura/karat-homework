@@ -7,7 +7,7 @@ import {
 import Home, { loader as homeLoader } from './Home';
 import NotFound from './404';
 import reportWebVitals from './reportWebVitals';
-import AccountOnboarding from './AccountOnboarding';
+import AccountOnboarding, {action as accountOnboardingAction } from './AccountOnboarding';
 import Account, {loader as accountLoader, action as accountUpdateAction } from "./Account"
 import About from "./About"
 import CardholderOnboard, { action as createCardholderAction } from "./CardholderOnboard"
@@ -26,7 +26,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/accounts/new",
-        element: <AccountOnboarding />
+        element: <AccountOnboarding />,
+        action: accountOnboardingAction
       },
       {
         path: "/accounts/:accountId",

@@ -1,6 +1,6 @@
 import { Link, Form, redirect, useLoaderData } from "react-router-dom";
 import { getAccount, getAccountUpdateLink } from "./apiClient";
-
+import { useState } from "react"
 export const loader = async ({ params }) => {
     return await getAccount(params.accountId);
 }
@@ -17,11 +17,12 @@ export async function action({ params }) {
 const Account = () => {
     const account = useLoaderData()
     const accountName = account.data.id
+    const [loading, setLoading] = useState(false)
     return (
         <div>
             <h2>{accountName}</h2>
-            <Form method="POST">
-                <button type="submit">Update Account</button>
+            <Form method="POST" onSubmit={() => setLoading(true)}>
+                <button type="submit" disabled={loading}>Update Account</button>
             </Form>
 
             <h2>Cardholders</h2>
