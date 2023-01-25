@@ -1,13 +1,13 @@
-import { Link } from "react-router-dom"
+import { Link } from 'react-router-dom'
 
 const About = () => {
-return (
+  return (
     <div>
-        <h2>Financial Services for Rabbits</h2>
-        <p>Get your very own Carrot Card!</p>
-        <Link to={"/accounts/new"}>Get Started Today</Link>
+      <h2>Financial Services for Rabbits</h2>
+      <p>Get your very own Carrot Card!</p>
+      <Link to='/accounts/new'>Get Started Today</Link>
     </div>
-)
+  )
 }
 
-export default About;
+export default About

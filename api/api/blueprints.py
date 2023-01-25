@@ -151,6 +151,7 @@ class AccountUpdateLink(MethodView):
             account=account_id, type="account_update", **data
         )
 
+
 class StripeAddressSchema(ma.Schema):
     line1 = ma.fields.String()
     city = ma.fields.String()
@@ -158,8 +159,10 @@ class StripeAddressSchema(ma.Schema):
     country = ma.fields.String(load_default="US")
     postal_code = ma.fields.String()
 
+
 class StripeBillingSchema(ma.Schema):
     address = ma.fields.Nested(StripeAddressSchema)
+
 
 class StripeCardholderCreateSchema(ma.Schema):
     name = ma.fields.String()
@@ -207,6 +210,7 @@ class StripeCardCreateSchema(ma.Schema):
     type = ma.fields.String(load_default="virtual")
     status = ma.fields.String(load_default="active")
 
+
 @accounts.route("/<account_id>/cards/")
 class Cards(MethodView):
     @accounts.response(200, StripeCardSchema(many=True))
@@ -226,15 +230,15 @@ class Cards(MethodView):
         account = (
             db.session.query(StripeAccount)
             .options(db.joinedload(StripeAccount.cardholders))
-            .filter(StripeAccount.cardholders.any(StripeCardholder.id==data.cardholder))
+            .filter(
+                StripeAccount.cardholders.any(StripeCardholder.id == data.cardholder)
+            )
             .filter(StripeAccount.id == account_id)
             .first()
         )
         if not account:
             abort(404, "Account not found")
-        new_card = stripe.issuing.Card.create(
-            stripe_account=account_id, **data
-        )
+        new_card = stripe.issuing.Card.create(stripe_account=account_id, **data)
         card = StripeCard(id=new_card.id, data=new_card)
         card.cardholder = db.session.query(StripeCardholder).get(data.cardholder)
         card.account = account

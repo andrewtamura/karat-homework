@@ -1,12 +1,11 @@
 
-import { getCardholders } from "./apiClient";
+import { getCardholders } from './apiClient'
 
 export const loader = async ({ params }) => {
-    return await getCardholders(params.accountId);
+  return await getCardholders(params.accountId)
 }
 
 const Cardholders = () => {
-
-    return null;
+  return null
 }
-export default Cardholders;
+export default Cardholders
