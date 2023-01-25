@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from api.extensions import ma, db, open_api
 from api.models import *
-from api.blueprints import accounts
+from api.blueprints import accounts, stripe_webhook
 import stripe
 
 
@@ -13,6 +13,8 @@ def create_app(config_module):
     ma.init_app(app)
     open_api.init_app(app)
     open_api.register_blueprint(accounts)
+    open_api.register_blueprint(stripe_webhook)
+
     with app.app_context():
         db.create_all()
 

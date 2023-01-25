@@ -6,6 +6,56 @@ from api.extensions import db
 import marshmallow as ma
 import stripe
 
+
+stripe_webhook = Blueprint(
+    "stripe_webhook",
+    __name__,
+    url_prefix="/stripe/webhook",
+    description="incoming Stripe webhook",
+)
+
+
+class StripeEventSchema(ma.Schema):
+    data = ma.fields.Nested(keys=ma.fields.String(), values=ma.fields.Dict())
+
+
+@stripe_webhook.route("/")
+class StripeWebhook(MethodView):
+    @stripe_webhook.arguments(StripeEventSchema(unknown=ma.INCLUDE))
+    @stripe_webhook.response(200)
+    def post(self, event_data):
+        event = None
+        try:
+            event = stripe.Event.construct_from(json.loads(event_data), stripe.api_key)
+        except ValueError as e:
+            # Invalid payload
+            abort(400)
+        if event.type == "account.created":
+            new_account = StripeAccount(id=event.data.object.id, data=event.data.object)
+            try:
+                db.session.add(new_account)
+                db.session.commit()
+            except sq.exc.SQLAlchemyError as e:
+                # already exists
+                pass
+        elif event.type == "account.updated":
+            res = (
+                db.session.query(StripeAccount)
+                .filter(StripeAccount.id == event.data.object.id)
+                .update({data: event.data.object})
+            )
+            if not res:
+                # account exists in Stripe, but not in our DB.
+                new_account = StripeAccount(
+                    id=event.data.object.id, data=event.data.object
+                )
+                db.session.add(new_account)
+            db.session.commit()
+
+        else:
+            print("Unhandled event type {}".format(event.type))
+
+
 accounts = Blueprint(
     "accounts", __name__, url_prefix="/api/accounts", description="All your accounts"
 )
