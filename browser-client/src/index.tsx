@@ -9,7 +9,10 @@ import Home, { loader as homeLoader } from './Home';
 import NotFound from './404';
 import reportWebVitals from './reportWebVitals';
 import AccountOnboarding from './AccountOnboarding';
-import Account, {loader as accountLoader } from "./Account"
+import Account, {loader as accountLoader, action as accountUpdateAction } from "./Account"
+import About from "./About"
+import CardholderOnboard, { action as createCardholderAction } from "./CardholderOnboard"
+import CardOnboard, { action as createCardAction, loader as createCardLoader } from "./CardOnboard"
 
 const router = createBrowserRouter([
   {
@@ -19,24 +22,28 @@ const router = createBrowserRouter([
     loader: homeLoader,
     children: [
       {
+        index: true,
+        element: <About />
+      },
+      {
         path: "/accounts/new",
         element: <AccountOnboarding />
       },
       {
         path: "/accounts/:accountId",
         loader: accountLoader,
+        action: accountUpdateAction,
         element: <Account />,
-        children: [
-          {
-            path: "/cards",
-            element: null,
-          },
-          {
-            path: "/card-holders",
-            element: null,
-          }
-    
-        ]
+      },
+      {
+        path: "/accounts/:accountId/cardholders/new",
+        element: <CardholderOnboard />,
+        action: createCardholderAction
+      },{
+        path: "/accounts/:accountId/cards/new",
+        element: <CardOnboard />,
+        action: createCardAction,
+        loader: createCardLoader
       }
     ]
   },

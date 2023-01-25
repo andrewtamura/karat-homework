@@ -9,11 +9,12 @@ const Home = () => {
     const accounts = useLoaderData();
     return (
         <div className="App">
-            <h1>Carrot Card</h1>
+            <h1><Link to="/">Carrot Financial</Link></h1>
             <nav>
+                <h2>Accounts</h2>
                 {accounts.length ? (
                     <ul>
-                        {accounts.map(({ name, id }) => (<li><Link to={`/accounts/${id}`}>{name}</Link></li>))}
+                        {accounts.map(({ id }) => (<li key={id}><Link to={`/accounts/${id}`}>{id}</Link></li>))}
                     </ul>
                 ) : <p>No accounts</p>}
             </nav>

@@ -1,10 +1,13 @@
 from flask_smorest import Blueprint, abort
 from flask.views import MethodView
+from flask import current_app, request
 from api.schemas import StripeAccountSchema, StripeCardholderSchema, StripeCardSchema
 from api.models import StripeAccount, StripeCardholder, StripeCard
 from api.extensions import db
 import marshmallow as ma
 import stripe
+import json
+import time
 
 
 stripe_webhook = Blueprint(
@@ -24,9 +27,10 @@ class StripeWebhook(MethodView):
     @stripe_webhook.arguments(StripeEventSchema(unknown=ma.INCLUDE))
     @stripe_webhook.response(200)
     def post(self, event_data):
+        print(event_data)
         event = None
         try:
-            event = stripe.Event.construct_from(json.loads(event_data), stripe.api_key)
+            event = stripe.Event.construct_from(event_data, stripe.api_key)
         except ValueError as e:
             # Invalid payload
             abort(400)
@@ -35,6 +39,7 @@ class StripeWebhook(MethodView):
             try:
                 db.session.add(new_account)
                 db.session.commit()
+                print("account added")
             except sq.exc.SQLAlchemyError as e:
                 # already exists
                 pass
@@ -42,7 +47,7 @@ class StripeWebhook(MethodView):
             res = (
                 db.session.query(StripeAccount)
                 .filter(StripeAccount.id == event.data.object.id)
-                .update({data: event.data.object})
+                .update({"data": event.data.object})
             )
             if not res:
                 # account exists in Stripe, but not in our DB.
@@ -51,7 +56,7 @@ class StripeWebhook(MethodView):
                 )
                 db.session.add(new_account)
             db.session.commit()
-
+            print("account updated")
         else:
             print("Unhandled event type {}".format(event.type))
 
@@ -68,9 +73,8 @@ class Accounts(MethodView):
         """Return the accounts"""
         return db.session.query(StripeAccount).all()
 
-    @accounts.response(200, StripeAccountSchema(many=False))
-    @accounts.arguments(StripeAccountSchema(many=False))
-    def post(self, data):
+    @accounts.response(200, StripeAccountSchema)
+    def post(self):
         """Create a new account"""
         new_account = stripe.Account.create(
             type="custom",
@@ -147,16 +151,20 @@ class AccountUpdateLink(MethodView):
             account=account_id, type="account_update", **data
         )
 
+class StripeAddressSchema(ma.Schema):
+    line1 = ma.fields.String()
+    city = ma.fields.String()
+    state = ma.fields.String()
+    country = ma.fields.String(load_default="US")
+    postal_code = ma.fields.String()
 
 class StripeBillingSchema(ma.Schema):
-    address = ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.String())
-
+    address = ma.fields.Nested(StripeAddressSchema)
 
 class StripeCardholderCreateSchema(ma.Schema):
-    name = (ma.fields.String(),)
-    email = (ma.fields.Email(),)
-    phone_number = ma.fields.Number()
-    type = ma.fields.String()
+    name = ma.fields.String()
+    email = ma.fields.Email()
+    phone_number = ma.fields.String()
     billing = ma.fields.Nested(StripeBillingSchema)
 
 
@@ -167,14 +175,14 @@ class Cardholders(MethodView):
         """Return the card holders associated with this account"""
         return (
             db.session.query(StripeCardholder)
-            .options(db.joinedload(StripeCardholder.account))
-            .filter(StripeAccount.id == account_id)
+            .join(StripeCardholder.account)
+            .filter(StripeCardholder.account.has(StripeAccount.id == account_id))
             .all()
         )
 
-    @accounts.response(200, StripeCardholderSchema(many=False))
-    @accounts.arguments(StripeCardholderCreateSchema(many=False))
-    def post(self, account_id, data):
+    @accounts.response(200, StripeCardholderSchema)
+    @accounts.arguments(StripeCardholderCreateSchema(partial=False))
+    def post(self, data, account_id):
         """Create a new cardholder"""
         account = (
             db.session.query(StripeAccount)
@@ -184,7 +192,7 @@ class Cardholders(MethodView):
         if not account:
             abort(404, "Account not found")
         new_cardholder = stripe.issuing.Cardholder.create(
-            stripe_account=account_id, status="active", **data
+            stripe_account=account_id, status="active", type="individual", **data
         )
         cardholder = StripeCardholder(id=new_cardholder.id, data=new_cardholder)
         cardholder.account = account
@@ -194,45 +202,41 @@ class Cardholders(MethodView):
 
 
 class StripeCardCreateSchema(ma.Schema):
-    cardholder = ma.fields.String()
-    currency = ma.fields.String()
-
+    cardholder = ma.fields.String(required=True)
+    currency = ma.fields.String(load_default="USD")
+    type = ma.fields.String(load_default="virtual")
+    status = ma.fields.String(load_default="active")
 
 @accounts.route("/<account_id>/cards/")
 class Cards(MethodView):
     @accounts.response(200, StripeCardSchema(many=True))
     def get(self, account_id):
         """Return the cards associated with this account"""
-        account = (
-            db.session.query(StripeAccount)
-            .filter(StripeAccount.id == account_id)
-            .first()
-        )
-        if not account:
-            abort(404, "Account not found")
-
         return (
             db.session.query(StripeCard)
-            .options(db.joinedload(StripeCard.account))
-            .filter(StripeAccount.id == account_id)
+            .join(StripeCard.account)
+            .filter(StripeCard.account.has(StripeAccount.id == account_id))
             .all()
         )
 
-    @accounts.response(200, StripeCardSchema(many=False))
-    @accounts.arguments(StripeCardCreateSchema(many=False))
-    def post(self, account_id, data):
+    @accounts.response(200, StripeCardSchema)
+    @accounts.arguments(StripeCardCreateSchema)
+    def post(self, data, account_id):
         """Create a new card"""
         account = (
             db.session.query(StripeAccount)
+            .options(db.joinedload(StripeAccount.cardholders))
+            .filter(StripeAccount.cardholders.any(StripeCardholder.id==data.cardholder))
             .filter(StripeAccount.id == account_id)
             .first()
         )
         if not account:
             abort(404, "Account not found")
         new_card = stripe.issuing.Card.create(
-            stripe_account=account_id, type="virtual" ** data
+            stripe_account=account_id, **data
         )
         card = StripeCard(id=new_card.id, data=new_card)
+        card.cardholder = db.session.query(StripeCardholder).get(data.cardholder)
         card.account = account
         db.session.add(card)
         db.session.commit()

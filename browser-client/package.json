@@ -10,6 +10,7 @@
     "@types/node": "^16.18.11",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "dot-object": "^2.1.4",
     "http-proxy-middleware": "^2.0.6",
     "localforage": "^1.10.0",
     "match-sorter": "^6.3.1",

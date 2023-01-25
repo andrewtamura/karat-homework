@@ -60,41 +60,74 @@ export interface Cardholder {
 }
 
 const API_ROOT = "/api"
+const http = (path: string, ctx?: Record<string, any>) => {
+    return fetch(path, {
+        headers: {'Content-Type': 'application/json'},
+        ...ctx
+    })
+}
 export const getAccounts = async (): Promise<Account[]> => {
-    const resp = await fetch(`${API_ROOT}/accounts`)
+    const resp = await fetch(`${API_ROOT}/accounts/`)
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
 export const getAccount = async (accountId: string): Promise<Account> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}`)
+    const resp = await http(`${API_ROOT}/accounts/${accountId}/`)
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
 export const createAccount = async (): Promise<Account> => {
-    const resp = await fetch(`${API_ROOT}/accounts/`, { method: "POST" })
+    const resp = await http(`${API_ROOT}/accounts/`, { method: "POST" })
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
 export const getAccountOnboardingLink = async (accountId: string, data: CreateStripeAccountLink): Promise<StripeAccountLink> => {
     const queryParams = new URLSearchParams(data)
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/onboarding-link/?${queryParams}`)
+    const resp = await http(`${API_ROOT}/accounts/${accountId}/onboarding-link/?${queryParams}`)
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
 export const getAccountUpdateLink = async (accountId: string, data: CreateStripeAccountLink): Promise<StripeAccountLink> => {
     const queryParams = new URLSearchParams(data)
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/update-link/?${queryParams}`)
+    const resp = await http(`${API_ROOT}/accounts/${accountId}/update-link/?${queryParams}`)
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
 export const getCardholders = async (accountId: string): Promise<Cardholder[]> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/cardholders/`)
+    const resp = await http(`${API_ROOT}/accounts/${accountId}/cardholders/`)
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
-export const createCardholders = async (accountId: string, data: StripeCardholder): Promise<Cardholder[]> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/cardholders/`, { method: "POST", body: JSON.stringify(data) })
+export const createCardholder = async (accountId: string, data: StripeCardholder): Promise<Cardholder[]> => {
+    const resp = await http(`${API_ROOT}/accounts/${accountId}/cardholders/`, { method: "POST", body: JSON.stringify(data) })
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
 export const getCards = async (accountId: string): Promise<Card[]> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/cards`)
+    const resp = await http(`${API_ROOT}/accounts/${accountId}/cards`)
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
-export const createCards = async (accountId: string, data: StripeCard): Promise<Card[]> => {
-    const resp = await fetch(`${API_ROOT}/accounts/${accountId}/cards/`, { method: "POST", body: JSON.stringify(data) })
+export const createCard = async (accountId: string, data: StripeCard): Promise<Card[]> => {
+    const resp = await http(`${API_ROOT}/accounts/${accountId}/cards/`, { method: "POST", body: JSON.stringify(data) })
+    if (!resp.ok) {
+        throw new Error(resp.statusText)
+    }
     return await resp.json()
 }
