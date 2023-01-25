@@ -12,7 +12,7 @@ export interface StripeAccountLink {
     url: string;
 }
 
-export interface CreateStripeAccountLink {
+export interface CreateStripeAccountLink extends Record<string, string> {
     return_url: string;
     refresh_url: string;
 }
@@ -44,7 +44,9 @@ export interface StripeCard {
 
 export interface Account {
     id: string;
-    data: StripeAccount
+    data: StripeAccount;
+    cards: Card[];
+    cardholders: Cardholder[];
 }
 
 export interface Card {

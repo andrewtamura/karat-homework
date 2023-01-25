@@ -8,6 +8,8 @@ import './index.css';
 import Home, { loader as homeLoader } from './Home';
 import NotFound from './404';
 import reportWebVitals from './reportWebVitals';
+import AccountOnboarding from './AccountOnboarding';
+import Account, {loader as accountLoader } from "./Account"
 
 const router = createBrowserRouter([
   {
@@ -17,8 +19,13 @@ const router = createBrowserRouter([
     loader: homeLoader,
     children: [
       {
+        path: "/accounts/new",
+        element: <AccountOnboarding />
+      },
+      {
         path: "/accounts/:accountId",
-        element: null,
+        loader: accountLoader,
+        element: <Account />,
         children: [
           {
             path: "/cards",
