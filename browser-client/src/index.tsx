@@ -4,7 +4,6 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import './index.css';
 import Home, { loader as homeLoader } from './Home';
 import NotFound from './404';
 import reportWebVitals from './reportWebVitals';
