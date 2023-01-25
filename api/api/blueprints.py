@@ -16,7 +16,7 @@ stripe_webhook = Blueprint(
 
 
 class StripeEventSchema(ma.Schema):
-    data = ma.fields.Nested(keys=ma.fields.String(), values=ma.fields.Dict())
+    data = ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.Dict())
 
 
 @stripe_webhook.route("/")
@@ -160,7 +160,7 @@ class StripeCardholderCreateSchema(ma.Schema):
     billing = ma.fields.Nested(StripeBillingSchema)
 
 
-@accounts.route("/<account_id>/card-holders/")
+@accounts.route("/<account_id>/cardholders/")
 class Cardholders(MethodView):
     @accounts.response(200, StripeCardholderSchema(many=True))
     def get(self, account_id):

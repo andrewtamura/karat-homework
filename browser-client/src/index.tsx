@@ -1,15 +1,46 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
 import './index.css';
-import App from './App';
+import Home, { loader as homeLoader } from './Home';
+import NotFound from './404';
 import reportWebVitals from './reportWebVitals';
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+    errorElement: <NotFound />,
+    loader: homeLoader,
+    children: [
+      {
+        path: "/accounts/:accountId",
+        element: null,
+        children: [
+          {
+            path: "/cards",
+            element: null,
+          },
+          {
+            path: "/card-holders",
+            element: null,
+          }
+    
+        ]
+      }
+    ]
+  },
+]);
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 
